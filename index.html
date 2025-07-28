@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carinho?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffe6f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+      transition: background-color 1s ease;
+    }
+
+    h1 {
+      color: #e60073;
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+      z-index: 2;
+      transition: opacity 1s;
+    }
+
+    .botoes {
+      display: flex;
+      gap: 20px;
+      z-index: 2;
+      transition: opacity 1s;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    #sim {
+      background-color: #ff4da6;
+      color: white;
+    }
+
+    #nao {
+      background-color: #ccc;
+      color: black;
+      position: absolute;
+    }
+
+    .mensagem {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      color: white;
+      display: none;
+      z-index: 3;
+      text-align: center;
+      font-weight: bold;
+      text-shadow: 2px 2px 10px #000;
+    }
+
+    .fundo-escuro {
+      background-color: #000 !important;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <h1>Você vai me dar carinho?</h1>
+  <div class="botoes">
+    <button id="sim">Sim</button>
+    <button id="nao">Não</button>
+  </div>
+  <div class="mensagem" id="mensagem">Então me dá carinho agora</div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const naoBtn = document.getElementById('nao');
+    const simBtn = document.getElementById('sim');
+    const mensagem = document.getElementById('mensagem');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const h1 = document.querySelector("h1");
+    const botoes = document.querySelector(".botoes");
+    const body = document.body;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Movimento do botão "Não"
+    document.addEventListener('mousemove', (e) => {
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      const rect = naoBtn.getBoundingClientRect();
+      const btnX = rect.left + rect.width / 2;
+      const btnY = rect.top + rect.height / 2;
+
+      const distancia = Math.hypot(mouseX - btnX, mouseY - btnY);
+
+      if (distancia < 120) {
+        const offsetX = (Math.random() - 0.5) * 300;
+        const offsetY = (Math.random() - 0.5) * 300;
+
+        naoBtn.style.left = Math.min(window.innerWidth - 100, Math.max(0, btnX + offsetX)) + "px";
+        naoBtn.style.top = Math.min(window.innerHeight - 50, Math.max(0, btnY + offsetY)) + "px";
+      }
+    });
+
+    // Efeitos de fogos
+    let particles = [];
+
+    function createFirework(x, y) {
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5,
+          alpha: 1,
+          radius: Math.random() * 3 + 1,
+          color: `hsl(${Math.random() * 360}, 100%, 60%)`
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.01;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        } else {
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        }
+      });
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    simBtn.addEventListener("click", () => {
+      const x = window.innerWidth / 2;
+      const y = window.innerHeight / 2;
+      createFirework(x, y);
+      mensagem.style.display = "block";
+      body.classList.add("fundo-escuro");
+      h1.style.opacity = "0";
+      botoes.style.opacity = "0";
+    });
+  </script>
+</body>
+</html>
