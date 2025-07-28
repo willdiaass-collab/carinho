@@ -5,38 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Carinho?</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       font-family: Arial, sans-serif;
       background-color: #ffe6f0;
       margin: 0;
-      height: 100vh;
+      padding: 0;
       overflow: hidden;
-      position: relative;
-      transition: background-color 1s ease;
+    }
+
+    .container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
     }
 
     h1 {
       color: #e60073;
       font-size: 2.5rem;
       margin-bottom: 40px;
-      z-index: 2;
-      transition: opacity 1s;
+      z-index: 1;
     }
 
     .botoes {
-      position: relative;
       display: flex;
       gap: 20px;
-      z-index: 2;
-      transition: opacity 1s;
+      position: relative;
+      z-index: 1;
     }
 
     button {
@@ -51,142 +49,120 @@
     #sim {
       background-color: #ff4da6;
       color: white;
-      position: relative;
     }
 
     #nao {
       background-color: #ccc;
       color: black;
       position: absolute;
-      left: 120px;
+    }
+
+    .overlay {
+      position: fixed;
       top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      flex-direction: column;
     }
 
     .mensagem {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
       color: white;
-      display: none;
-      z-index: 3;
-      text-align: center;
-      font-weight: bold;
-      text-shadow: 2px 2px 10px #000;
+      font-size: 2rem;
+      margin-bottom: 20px;
     }
 
-    .fundo-escuro {
-      background-color: #000 !important;
-    }
-
-    canvas {
+    .coraçao {
       position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1;
+      color: red;
+      font-size: 2rem;
+      animation: subir 2s linear forwards;
+    }
+
+    @keyframes subir {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-200px);
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Você vai me dar carinho?</h1>
-
-  <div class="botoes" id="botoes">
-    <button id="sim">Sim</button>
-    <button id="nao">Não</button>
+  <div class="container">
+    <h1>Você vai me dar carinho?</h1>
+    <div class="botoes">
+      <button id="sim">Sim</button>
+      <button id="nao">Não</button>
+    </div>
   </div>
 
-  <div class="mensagem" id="mensagem">Então me dá carinho agora</div>
-  <canvas id="canvas"></canvas>
+  <div class="overlay" id="overlay">
+    <div class="mensagem" id="mensagem">Então me dá carinho agora</div>
+  </div>
 
   <script>
     const naoBtn = document.getElementById('nao');
     const simBtn = document.getElementById('sim');
+    const overlay = document.getElementById('overlay');
     const mensagem = document.getElementById('mensagem');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const h1 = document.querySelector("h1");
-    const botoes = document.getElementById("botoes");
-    const body = document.body;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Coloca o botão "Não" no centro ao carregar
+    let naoLeft = window.innerWidth / 2 + 100;
+    let naoTop = window.innerHeight / 2;
 
-    window.addEventListener("resize", () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    naoBtn.style.left = naoLeft + 'px';
+    naoBtn.style.top = naoTop + 'px';
 
-    // Botão "não" foge do mouse
     document.addEventListener('mousemove', (e) => {
-      const rect = naoBtn.getBoundingClientRect();
       const mouseX = e.clientX;
       const mouseY = e.clientY;
+      const rect = naoBtn.getBoundingClientRect();
       const btnX = rect.left + rect.width / 2;
       const btnY = rect.top + rect.height / 2;
 
       const distancia = Math.hypot(mouseX - btnX, mouseY - btnY);
 
-      if (distancia < 120) {
-        const offsetX = (Math.random() - 0.5) * 300;
-        const offsetY = (Math.random() - 0.5) * 300;
+      if (distancia < 100) {
+        let newX = btnX + (Math.random() - 0.5) * 300;
+        let newY = btnY + (Math.random() - 0.5) * 300;
 
-        const novaEsquerda = Math.min(window.innerWidth - rect.width, Math.max(0, rect.left + offsetX));
-        const novoTopo = Math.min(window.innerHeight - rect.height, Math.max(0, rect.top + offsetY));
+        // Garante que o botão fique dentro da tela
+        newX = Math.max(0, Math.min(window.innerWidth - rect.width, newX));
+        newY = Math.max(0, Math.min(window.innerHeight - rect.height, newY));
 
-        naoBtn.style.left = `${novaEsquerda}px`;
-        naoBtn.style.top = `${novoTopo}px`;
+        naoBtn.style.left = newX + 'px';
+        naoBtn.style.top = newY + 'px';
       }
     });
 
-    // Fogos
-    let particles = [];
+    simBtn.addEventListener('click', () => {
+      overlay.style.display = 'flex';
+      gerarCoracoes();
+    });
 
-    function createFirework(x, y) {
-      for (let i = 0; i < 100; i++) {
-        particles.push({
-          x: x,
-          y: y,
-          vx: (Math.random() - 0.5) * 5,
-          vy: (Math.random() - 0.5) * 5,
-          alpha: 1,
-          radius: Math.random() * 3 + 1,
-          color: `hsl(${Math.random() * 360}, 100%, 60%)`
-        });
+    function gerarCoracoes() {
+      for (let i = 0; i < 20; i++) {
+        const cora = document.createElement('div');
+        cora.classList.add('coraçao');
+        cora.innerText = '❤';
+        cora.style.left = Math.random() * window.innerWidth + 'px';
+        cora.style.top = window.innerHeight + 'px';
+        overlay.appendChild(cora);
+
+        setTimeout(() => {
+          cora.remove();
+        }, 2000);
       }
     }
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.01;
-        if (p.alpha <= 0) {
-          particles.splice(i, 1);
-        } else {
-          ctx.globalAlpha = p.alpha;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-        }
-      });
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    simBtn.addEventListener("click", () => {
-      const x = window.innerWidth / 2;
-      const y = window.innerHeight / 2;
-      createFirework(x, y);
-      mensagem.style.display = "block";
-      body.classList.add("fundo-escuro");
-      h1.style.opacity = "0";
-      botoes.style.opacity = "0";
-    });
   </script>
 </body>
 </html>
