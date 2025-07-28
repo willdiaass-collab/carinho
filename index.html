@@ -20,21 +20,18 @@
       justify-content: center;
       height: 100vh;
       position: relative;
-      z-index: 1;
     }
 
     h1 {
       color: #e60073;
       font-size: 2.5rem;
       margin-bottom: 40px;
-      z-index: 1;
     }
 
     .botoes {
       display: flex;
       gap: 20px;
       position: relative;
-      z-index: 1;
     }
 
     button {
@@ -55,6 +52,8 @@
       background-color: #ccc;
       color: black;
       position: absolute;
+      left: 0;
+      top: 0;
     }
 
     .overlay {
@@ -106,21 +105,21 @@
   </div>
 
   <div class="overlay" id="overlay">
-    <div class="mensagem" id="mensagem">Então me dá carinho agora</div>
+    <div class="mensagem">Então me dá carinho agora</div>
   </div>
 
   <script>
     const naoBtn = document.getElementById('nao');
     const simBtn = document.getElementById('sim');
     const overlay = document.getElementById('overlay');
-    const mensagem = document.getElementById('mensagem');
 
-    // Coloca o botão "Não" no centro ao carregar
-    let naoLeft = window.innerWidth / 2 + 100;
-    let naoTop = window.innerHeight / 2;
+    // Inicializa o botão "Não" no lado direito
+    function inicializarBotaoNao() {
+      naoBtn.style.left = "100px";
+      naoBtn.style.top = "0px";
+    }
 
-    naoBtn.style.left = naoLeft + 'px';
-    naoBtn.style.top = naoTop + 'px';
+    inicializarBotaoNao();
 
     document.addEventListener('mousemove', (e) => {
       const mouseX = e.clientX;
@@ -136,8 +135,11 @@
         let newY = btnY + (Math.random() - 0.5) * 300;
 
         // Garante que o botão fique dentro da tela
-        newX = Math.max(0, Math.min(window.innerWidth - rect.width, newX));
-        newY = Math.max(0, Math.min(window.innerHeight - rect.height, newY));
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+
+        newX = Math.max(0, Math.min(maxX, newX));
+        newY = Math.max(0, Math.min(maxY, newY));
 
         naoBtn.style.left = newX + 'px';
         naoBtn.style.top = newY + 'px';
